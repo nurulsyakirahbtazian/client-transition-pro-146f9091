@@ -14,8 +14,8 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Handover OS — B2B Client Transition Dashboard" },
-      { name: "description", content: "Premium B2B client handover and account transition platform with AI-polished insights and one-click Excel export." },
+      { title: "Handover OS — Client Handover & Account Transition Dashboard" },
+      { name: "description", content: "Premium client handover and account transition platform with one-click Excel export." },
     ],
   }),
   component: Dashboard,
@@ -319,7 +319,7 @@ function Dashboard() {
     const wb = XLSX.utils.book_new();
     wb.Props = {
       Title: `Client Handover — ${client.name}`,
-      Subject: "B2B Client Handover & Account Transition",
+      Subject: "Client Handover & Account Transition",
       Author: "Handover OS",
       Company: "Handover OS",
       CreatedDate: new Date(),
@@ -328,7 +328,7 @@ function Dashboard() {
     // ============ 1. EXECUTIVE SUMMARY ============
     {
       const rows: (CellSpec | null)[][] = [
-        [{ v: "B2B CLIENT HANDOVER  —  EXECUTIVE SUMMARY", s: titleStyle }, null, null, null],
+        [{ v: "CLIENT HANDOVER  —  EXECUTIVE SUMMARY", s: titleStyle }, null, null, null],
         [{ v: `${client.name}  ·  Prepared ${dateStr}  ·  Confidential`, s: subtitleStyle }, null, null, null],
         [null, null, null, null],
         [{ v: "ACCOUNT SNAPSHOT", s: sectionStyle }, null, null, null],
@@ -517,7 +517,7 @@ function Dashboard() {
                   <span className="text-[11px] font-medium text-muted-foreground">v2.4 · Enterprise</span>
                 </div>
                 <h1 className="mt-1.5 text-2xl font-semibold tracking-tight text-slate-ink lg:text-[28px]">
-                  B2B Client Handover & Account Transition
+                  Client Handover & Account Transition
                 </h1>
                 <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
                   Capture institutional knowledge and ship a board-ready Excel handover in minutes — not weeks.
