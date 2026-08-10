@@ -514,7 +514,20 @@ function Dashboard() {
       ), "Source Documents");
     }
 
-    // 11. 30-DAY TRANSITION PLAN (last tab) with Owner + Status
+    // 11. CUSTOM FIELDS (user-defined)
+    {
+      const rows = customFields.filter((f) => f.label.trim());
+      if (rows.length > 0) {
+        XLSX.utils.book_append_sheet(wb, makeTableSheet(
+          "Custom Fields", ["Field", "Field Type", "Value"],
+          rows.map((f) => [f.label, f.type, f.value]),
+          [32, 18, 70]
+        ), "Custom Fields");
+      }
+    }
+
+    // 12. 30-DAY TRANSITION PLAN (last tab) with Owner + Status
+
     XLSX.utils.book_append_sheet(wb, makeTableSheet(
       "30-Day Transition Plan", ["Milestone", "Details", "Owner", "Status"],
       plan.map((p) => [
