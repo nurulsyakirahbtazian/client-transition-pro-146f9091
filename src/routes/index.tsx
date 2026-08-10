@@ -97,6 +97,10 @@ function Dashboard() {
   const [prefs, setPrefs] = useState(initialPrefs);
   const [kt, setKT] = useState(initialKT);
   const [plan, setPlan] = useState<PlanItem[]>(initialPlan);
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
+  const [sheetPrimary, setSheetPrimary] = useState("#1E3A5F");
+  const [sheetSecondary, setSheetSecondary] = useState("#1A2233");
+
 
   type UploadedFile = { name: string; size: number; type: string; content: string };
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
