@@ -30,17 +30,7 @@ No backend, no accounts, no API tokens. Everything runs client-side in the brows
 
 ## Features
 
-### 1. Document Upload (top banner)
-Drag-and-drop or browse. Text-based files (`.txt`, `.md`, `.csv`, `.json`, `.log`, `.yml`) under 2 MB are read in-browser and pattern-matched to pre-populate:
-
-- Client name, industry, region, services
-- Platforms mentioned (Marketo, Salesforce, 6sense, ON24, Salesloft, HubSpot)
-- Stakeholders inferred from email addresses plus nearby role keywords
-- Open issues from lines starting with `issue:`, `risk:`, `bug:`, `blocker:`, `problem:`
-
-A toast confirms how many fields were filled. Files appear as removable chips and ride along into the export.
-
-### 2. Left Panel — Structured Form
+### 1. Left Panel — Structured Form
 - **Client Info** — name, industry, region, services, prepared by
 - **Stakeholders** — name, role, email, notes
 - **Recurring Tasks** — task, frequency, current owner, new owner, instructions
@@ -50,8 +40,11 @@ A toast confirms how many fields were filled. Files appear as removable chips an
 - **Client Preferences** — communication style, reporting expectations, escalation path
 - **Knowledge Transfer Notes** — tribal knowledge, watch-outs, historical context
 
-### 3. Right Panel — 30-Day Transition Plan
+### 2. Right Panel — 30-Day Transition Plan
 An editable milestone list: tick when done, add a title, elaborate in the details field, assign an owner and set a status. Add or remove items freely. Flows straight into the workbook.
+
+### 3. Excel Theme Colours
+Choose primary and secondary colours that drive the exported workbook's title bands, section headers and accent fills. Preset palettes (Navy, Emerald, Graphite, Burgundy, Teal) plus custom hex inputs.
 
 ### 4. Export
 A single **Generate & Download Excel** action assembles the whole workbook from live form state.
