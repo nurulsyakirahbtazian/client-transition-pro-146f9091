@@ -866,7 +866,49 @@ function Dashboard() {
               )}
             </Section>
 
+            <Section icon={<Layers className="h-4 w-4" />} title="Excel Theme Colors" subtitle="Pick the primary and secondary colors used in the exported sheet">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Primary (section bands)">
+                  <div className="flex items-center gap-2">
+                    <input type="color" value={sheetPrimary} onChange={(e) => setSheetPrimary(e.target.value)}
+                      className="h-9 w-12 shrink-0 cursor-pointer rounded-md border border-border bg-card p-1" aria-label="Primary sheet color" />
+                    <input className="input-base" value={sheetPrimary} onChange={(e) => setSheetPrimary(e.target.value)} placeholder="#1E3A5F" />
+                  </div>
+                </Field>
+                <Field label="Secondary (titles & headers)">
+                  <div className="flex items-center gap-2">
+                    <input type="color" value={sheetSecondary} onChange={(e) => setSheetSecondary(e.target.value)}
+                      className="h-9 w-12 shrink-0 cursor-pointer rounded-md border border-border bg-card p-1" aria-label="Secondary sheet color" />
+                    <input className="input-base" value={sheetSecondary} onChange={(e) => setSheetSecondary(e.target.value)} placeholder="#1A2233" />
+                  </div>
+                </Field>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {THEME_PRESETS.map((p) => (
+                  <button key={p.name} type="button"
+                    onClick={() => { setSheetPrimary(p.primary); setSheetSecondary(p.secondary); }}
+                    className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-slate-ink hover:border-slate-soft/50">
+                    <span className="flex">
+                      <span className="h-3.5 w-3.5 rounded-full border border-white" style={{ background: p.primary }} />
+                      <span className="-ml-1 h-3.5 w-3.5 rounded-full border border-white" style={{ background: p.secondary }} />
+                    </span>
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-4 overflow-hidden rounded-lg border border-border">
+                <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-white" style={{ background: sheetSecondary }}>
+                  Sheet title band
+                </div>
+                <div className="px-3 py-1.5 text-[11px] font-semibold text-white" style={{ background: sheetPrimary }}>
+                  Section header
+                </div>
+                <div className="bg-card px-3 py-2 text-[11px] text-muted-foreground">Table row preview</div>
+              </div>
+            </Section>
+
             {/* Action */}
+
             <button
               onClick={generateExcel}
               className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-xl bg-brand px-6 py-5 text-base font-semibold text-brand-foreground shadow-brand transition-all hover:translate-y-[-1px] hover:bg-brand/95 active:translate-y-0"
