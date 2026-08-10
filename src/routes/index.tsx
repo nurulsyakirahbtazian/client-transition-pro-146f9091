@@ -1,14 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import * as XLSX from "xlsx-js-style";
 import fileSaver from "file-saver";
 
 const { saveAs } = fileSaver;
 import {
-  Upload, FileSpreadsheet, Users, Briefcase, ListChecks, AlertTriangle,
+  FileSpreadsheet, Users, Briefcase, ListChecks, AlertTriangle,
   MessageSquare, BookOpen, Layers, Download,
   Calendar, Plus, Trash2,
 } from "lucide-react";
+
 
 
 export const Route = createFileRoute("/")({
@@ -65,9 +66,6 @@ const initialKT = {
 type PlanItem = { done: boolean; title: string; detail: string; owner: string; status: string };
 const initialPlan: PlanItem[] = [];
 
-type FieldType = "Text" | "Long Text" | "Number" | "Date" | "Yes / No" | "Link";
-const FIELD_TYPES: FieldType[] = ["Text", "Long Text", "Number", "Date", "Yes / No", "Link"];
-type CustomField = { label: string; type: FieldType; value: string };
 
 const THEME_PRESETS: { name: string; primary: string; secondary: string }[] = [
   { name: "Navy", primary: "#1E3A5F", secondary: "#1A2233" },
@@ -500,33 +498,9 @@ function Dashboard() {
       ), "Knowledge Transfer Checklist");
     }
 
-    // 10. SOURCE DOCUMENTS (uploaded files — content + metadata)
-    if (uploadedFiles.length > 0) {
-      const rows: (string | { v: string; s: any })[][] = uploadedFiles.map((f) => [
-        f.name,
-        `${(f.size / 1024).toFixed(1)} KB`,
-        f.type || "—",
-        f.content ? f.content.slice(0, 2000) + (f.content.length > 2000 ? " …(truncated)" : "") : "(binary — listed for reference only)",
-      ]);
-      XLSX.utils.book_append_sheet(wb, makeTableSheet(
-        "Source Documents", ["File Name", "Size", "Type", "Content / Notes"],
-        rows, [40, 14, 20, 80]
-      ), "Source Documents");
-    }
 
-    // 11. CUSTOM FIELDS (user-defined)
-    {
-      const rows = customFields.filter((f) => f.label.trim());
-      if (rows.length > 0) {
-        XLSX.utils.book_append_sheet(wb, makeTableSheet(
-          "Custom Fields", ["Field", "Field Type", "Value"],
-          rows.map((f) => [f.label, f.type, f.value]),
-          [32, 18, 70]
-        ), "Custom Fields");
-      }
-    }
 
-    // 12. 30-DAY TRANSITION PLAN (last tab) with Owner + Status
+    // 10. 30-DAY TRANSITION PLAN (last tab) with Owner + Status
 
     XLSX.utils.book_append_sheet(wb, makeTableSheet(
       "30-Day Transition Plan", ["Milestone", "Details", "Owner", "Status"],
