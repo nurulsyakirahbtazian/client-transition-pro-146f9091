@@ -222,10 +222,18 @@ function Dashboard() {
 
   const generateExcel = () => {
     // ----- Styling helpers -----
-    const BRAND = "1E3A5F";
-    const INK = "1A2233";
-    const SUBINK = "3A4456";
-    const SOFT = "F4F6FA";
+    const BRAND = hex6(sheetPrimary, "1E3A5F");
+    const INK = hex6(sheetSecondary, "1A2233");
+    const mixWhite = (h: string, amt: number) => {
+      const n = parseInt(h, 16);
+      const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) =>
+        Math.round(c + (255 - c) * amt)
+      );
+      return ch.map((c) => c.toString(16).padStart(2, "0")).join("").toUpperCase();
+    };
+    const SUBINK = mixWhite(INK, 0.22);
+    const SOFT = mixWhite(BRAND, 0.92);
+
     const BORDER_GRAY = "D8DEE7";
     const ZEBRA = "FAFBFD";
 
