@@ -1,14 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import * as XLSX from "xlsx-js-style";
 import fileSaver from "file-saver";
 
 const { saveAs } = fileSaver;
 import {
-  Upload, FileSpreadsheet, Users, Briefcase, ListChecks, AlertTriangle,
+  FileSpreadsheet, Users, Briefcase, ListChecks, AlertTriangle,
   MessageSquare, BookOpen, Layers, Download,
   Calendar, Plus, Trash2,
 } from "lucide-react";
+
 
 
 export const Route = createFileRoute("/")({
@@ -65,9 +66,6 @@ const initialKT = {
 type PlanItem = { done: boolean; title: string; detail: string; owner: string; status: string };
 const initialPlan: PlanItem[] = [];
 
-type FieldType = "Text" | "Long Text" | "Number" | "Date" | "Yes / No" | "Link";
-const FIELD_TYPES: FieldType[] = ["Text", "Long Text", "Number", "Date", "Yes / No", "Link"];
-type CustomField = { label: string; type: FieldType; value: string };
 
 const THEME_PRESETS: { name: string; primary: string; secondary: string }[] = [
   { name: "Navy", primary: "#1E3A5F", secondary: "#1A2233" },
@@ -97,128 +95,9 @@ function Dashboard() {
   const [prefs, setPrefs] = useState(initialPrefs);
   const [kt, setKT] = useState(initialKT);
   const [plan, setPlan] = useState<PlanItem[]>(initialPlan);
-  const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [sheetPrimary, setSheetPrimary] = useState("#1E3A5F");
   const [sheetSecondary, setSheetSecondary] = useState("#1A2233");
 
-
-  type UploadedFile = { name: string; size: number; type: string; content: string };
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  const [dragOver, setDragOver] = useState(false);
-  const [autofillMsg, setAutofillMsg] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const TEXT_EXT = /\.(txt|md|csv|json|log|yml|yaml|tsv)$/i;
-  const isTextFile = (f: File) => TEXT_EXT.test(f.name) || f.type.startsWith("text/") || f.type === "application/json";
-
-  // Extract structured data from raw text via simple patterns
-  const extractFromText = (text: string) => {
-    const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-    const emails = Array.from(new Set(text.match(/[\w.+-]+@[\w-]+\.[\w.-]+/g) ?? []));
-
-    const pickAfter = (re: RegExp) => {
-      for (const l of lines) {
-        const m = l.match(re);
-        if (m && m[1]?.trim()) return m[1].trim();
-      }
-      return "";
-    };
-
-    const newClient = {
-      name: pickAfter(/^(?:client|company|account)\s*[:\-]\s*(.+)/i),
-      industry: pickAfter(/^industry\s*[:\-]\s*(.+)/i),
-      region: pickAfter(/^(?:region|location|geo)\s*[:\-]\s*(.+)/i),
-      services: pickAfter(/^(?:services?|scope|offerings?)\s*[:\-]\s*(.+)/i),
-    };
-
-    const knownPlatforms = ["Marketo", "Salesforce", "6sense", "ON24", "HubSpot", "Salesloft"];
-    const detectedPlatforms = knownPlatforms.filter((p) => new RegExp(`\\b${p.replace(/\+/g, "\\+")}\\b`, "i").test(text));
-
-    const newStakeholders: Stakeholder[] = emails.slice(0, 10).map((email) => {
-      const local = email.split("@")[0].replace(/[._-]+/g, " ");
-      const name = local.replace(/\b\w/g, (c) => c.toUpperCase());
-      // try to find a line mentioning this email for context
-      const ctx = lines.find((l) => l.includes(email)) ?? "";
-      const role = (ctx.match(/\b(CEO|CTO|CMO|COO|VP|Director|Manager|Lead|Head|Owner|Analyst|Coordinator)\b[^,;|]*/i)?.[0] ?? "").trim();
-      return { name, role, email, notes: "" };
-    });
-
-    const issueLines = lines.filter((l) => /^(issue|bug|risk|blocker|problem)\s*[:\-]/i.test(l));
-    const newIssues: Issue[] = issueLines.slice(0, 10).map((l) => ({
-      issue: l.replace(/^(issue|bug|risk|blocker|problem)\s*[:\-]\s*/i, ""),
-      priority: /critical|urgent|high/i.test(l) ? "High" : /low/i.test(l) ? "Low" : "Medium",
-      status: /resolved|done|closed/i.test(l) ? "Resolved" : "Open",
-      details: "",
-    }));
-
-    return { newClient, detectedPlatforms, newStakeholders, newIssues };
-  };
-
-  const applyExtracted = (text: string) => {
-    const { newClient, detectedPlatforms, newStakeholders, newIssues } = extractFromText(text);
-    const filled: string[] = [];
-
-    setClient((c) => {
-      const out = { ...c };
-      (Object.keys(newClient) as (keyof typeof newClient)[]).forEach((k) => {
-        if (newClient[k] && !out[k]) { out[k] = newClient[k]; filled.push(`client.${k}`); }
-      });
-      return out;
-    });
-    if (detectedPlatforms.length) {
-      setPlatforms((p) => {
-        const out = { ...p };
-        detectedPlatforms.forEach((name) => { out[name] = true; filled.push(`platform:${name}`); });
-        return out;
-      });
-    }
-    if (newStakeholders.length) {
-      setStakeholders((s) => {
-        const existing = new Set(s.map((x) => x.email.toLowerCase()));
-        const fresh = newStakeholders.filter((x) => !existing.has(x.email.toLowerCase()));
-        fresh.forEach(() => filled.push("stakeholder"));
-        return [...s, ...fresh];
-      });
-    }
-    if (newIssues.length) {
-      setIssues((i) => { newIssues.forEach(() => filled.push("issue")); return [...i, ...newIssues]; });
-    }
-    return filled.length;
-  };
-
-  const handleFiles = async (files: FileList | null) => {
-    if (!files || !files.length) return;
-    const arr = Array.from(files);
-    const parsed: UploadedFile[] = [];
-    let totalFilled = 0;
-
-    for (const f of arr) {
-      if (f.size > 2 * 1024 * 1024) {
-        parsed.push({ name: f.name, size: f.size, type: f.type, content: "" });
-        continue;
-      }
-      if (isTextFile(f)) {
-        const content = await f.text();
-        parsed.push({ name: f.name, size: f.size, type: f.type || "text/plain", content });
-        totalFilled += applyExtracted(content);
-      } else {
-        parsed.push({ name: f.name, size: f.size, type: f.type, content: "" });
-      }
-    }
-
-    setUploadedFiles((p) => [...p, ...parsed]);
-    const textCount = parsed.filter((p) => p.content).length;
-    setAutofillMsg(
-      totalFilled > 0
-        ? `Parsed ${textCount} doc${textCount > 1 ? "s" : ""} · auto-filled ${totalFilled} field${totalFilled > 1 ? "s" : ""}. Files will be attached to the Excel export.`
-        : textCount > 0
-          ? `Parsed ${textCount} text doc${textCount > 1 ? "s" : ""} — no patterns matched, but content will be attached to the Excel export.`
-          : `${parsed.length} file${parsed.length > 1 ? "s" : ""} attached. Binary files are listed in the export but cannot be parsed in-browser.`
-    );
-    setTimeout(() => setAutofillMsg(null), 6000);
-  };
-
-  const removeFile = (idx: number) => setUploadedFiles((p) => p.filter((_, i) => i !== idx));
 
   const generateExcel = () => {
     // ----- Styling helpers -----
@@ -500,33 +379,7 @@ function Dashboard() {
       ), "Knowledge Transfer Checklist");
     }
 
-    // 10. SOURCE DOCUMENTS (uploaded files — content + metadata)
-    if (uploadedFiles.length > 0) {
-      const rows: (string | { v: string; s: any })[][] = uploadedFiles.map((f) => [
-        f.name,
-        `${(f.size / 1024).toFixed(1)} KB`,
-        f.type || "—",
-        f.content ? f.content.slice(0, 2000) + (f.content.length > 2000 ? " …(truncated)" : "") : "(binary — listed for reference only)",
-      ]);
-      XLSX.utils.book_append_sheet(wb, makeTableSheet(
-        "Source Documents", ["File Name", "Size", "Type", "Content / Notes"],
-        rows, [40, 14, 20, 80]
-      ), "Source Documents");
-    }
-
-    // 11. CUSTOM FIELDS (user-defined)
-    {
-      const rows = customFields.filter((f) => f.label.trim());
-      if (rows.length > 0) {
-        XLSX.utils.book_append_sheet(wb, makeTableSheet(
-          "Custom Fields", ["Field", "Field Type", "Value"],
-          rows.map((f) => [f.label, f.type, f.value]),
-          [32, 18, 70]
-        ), "Custom Fields");
-      }
-    }
-
-    // 12. 30-DAY TRANSITION PLAN (last tab) with Owner + Status
+    // 10. 30-DAY TRANSITION PLAN (last tab) with Owner + Status
 
     XLSX.utils.book_append_sheet(wb, makeTableSheet(
       "30-Day Transition Plan", ["Milestone", "Details", "Owner", "Status"],
@@ -566,53 +419,6 @@ function Dashboard() {
                   Capture institutional knowledge and ship a board-ready Excel handover in minutes — not weeks.
                 </p>
               </div>
-            </div>
-
-            <div className="flex flex-col gap-2 lg:w-[460px]">
-              <div
-                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
-                onClick={() => fileInputRef.current?.click()}
-                className={`group flex cursor-pointer items-center gap-4 rounded-xl border-2 border-dashed px-5 py-4 transition-all ${
-                  dragOver ? "border-brand bg-brand/5" : "border-border bg-muted/40 hover:border-brand/60 hover:bg-brand/5"
-                }`}
-              >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-slate-ink text-white">
-                  <Upload className="h-5 w-5" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-slate-ink">Upload Existing Documents</p>
-                  <p className="text-xs text-muted-foreground">
-                    Drop .txt/.md/.csv/.json — auto-fills the form & attaches to the Excel
-                  </p>
-                </div>
-                <input ref={fileInputRef} type="file" multiple className="hidden" onChange={(e) => handleFiles(e.target.files)} />
-              </div>
-
-              {autofillMsg && (
-                <p className="rounded-md bg-brand/5 px-3 py-1.5 text-[11px] font-medium text-brand">{autofillMsg}</p>
-              )}
-
-              {uploadedFiles.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {uploadedFiles.map((f, i) => (
-                    <span key={i} className="inline-flex max-w-[220px] items-center gap-1.5 rounded-md border border-border bg-card px-2 py-1 text-[11px] text-slate-ink">
-                      <FileSpreadsheet className="h-3 w-3 shrink-0 text-muted-foreground" />
-                      <span className="truncate" title={f.name}>{f.name}</span>
-                      <span className="text-muted-foreground">{(f.size / 1024).toFixed(0)}kb</span>
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); removeFile(i); }}
-                        className="ml-0.5 text-muted-foreground hover:text-brand"
-                        aria-label={`Remove ${f.name}`}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -741,50 +547,6 @@ function Dashboard() {
                 <Field label="Watch-outs"><textarea rows={3} className="input-base" placeholder="e.g. Sensitive dates, approval delays, or things to avoid" value={kt.watchouts} onChange={(e) => setKT({ ...kt, watchouts: e.target.value })} /></Field>
                 <Field label="Historical Context"><textarea rows={3} className="input-base" placeholder="e.g. Account start date, past migrations, or team changes" value={kt.history} onChange={(e) => setKT({ ...kt, history: e.target.value })} /></Field>
               </div>
-            </Section>
-
-            <Section icon={<Plus className="h-4 w-4" />} title="Custom Fields" subtitle="Add your own fields and pick the field type"
-              action={<AddBtn onClick={() => setCustomFields([...customFields, { label: "", type: "Text", value: "" }])} />}>
-              {customFields.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-border bg-muted/30 p-6 text-center">
-                  <p className="text-[13px] text-muted-foreground">No custom fields yet.</p>
-                  <p className="mt-1 text-[11px] text-muted-foreground">Click "Add" to create a field — it gets its own tab in the Excel export.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {customFields.map((f, i) => (
-                    <RowCard key={i} onRemove={() => setCustomFields(customFields.filter((_, x) => x !== i))}>
-                      <div className="grid grid-cols-12 gap-2">
-                        <input className="input-base col-span-7" placeholder="Field name — e.g. Contract Renewal Date"
-                          value={f.label} onChange={(e) => updateArr(setCustomFields, customFields, i, { ...f, label: e.target.value })} />
-                        <select className="input-base col-span-5" value={f.type}
-                          onChange={(e) => updateArr(setCustomFields, customFields, i, { ...f, type: e.target.value as FieldType, value: "" })}>
-                          {FIELD_TYPES.map((t) => <option key={t}>{t}</option>)}
-                        </select>
-                        <div className="col-span-12">
-                          {f.type === "Long Text" ? (
-                            <textarea rows={3} className="input-base" placeholder="Value" value={f.value}
-                              onChange={(e) => updateArr(setCustomFields, customFields, i, { ...f, value: e.target.value })} />
-                          ) : f.type === "Yes / No" ? (
-                            <select className="input-base" value={f.value}
-                              onChange={(e) => updateArr(setCustomFields, customFields, i, { ...f, value: e.target.value })}>
-                              <option value="">Select…</option><option>Yes</option><option>No</option>
-                            </select>
-                          ) : (
-                            <input
-                              className="input-base"
-                              type={f.type === "Number" ? "number" : f.type === "Date" ? "date" : f.type === "Link" ? "url" : "text"}
-                              placeholder={f.type === "Link" ? "https://…" : "Value"}
-                              value={f.value}
-                              onChange={(e) => updateArr(setCustomFields, customFields, i, { ...f, value: e.target.value })}
-                            />
-                          )}
-                        </div>
-                      </div>
-                    </RowCard>
-                  ))}
-                </div>
-              )}
             </Section>
 
           </div>
@@ -917,7 +679,7 @@ function Dashboard() {
               <FileSpreadsheet className="h-5 w-5" />
               <span>Generate &amp; Download Excel</span>
               <Download className="h-5 w-5 transition-transform group-hover:translate-y-0.5" />
-              <span className="ml-2 rounded-md bg-white/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">8 tabs · .xlsx</span>
+              <span className="ml-2 rounded-md bg-white/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">10 tabs · .xlsx</span>
             </button>
 
             <p className="text-center text-[11px] text-muted-foreground">

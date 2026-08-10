@@ -19,10 +19,10 @@ When a client account changes hands, the knowledge rarely does. Handovers are sc
 
 One structured workspace where the outgoing owner records the full account picture, and one click turns it into a polished, boardroom-ready `.xlsx` handover pack the incoming owner can actually use.
 
-- **Upload existing docs** — SOPs, notes, emails, CSVs are parsed in the browser to auto-fill the form
 - **Structured capture** — client info, stakeholders, recurring tasks, platforms, logins, issues, preferences, knowledge transfer
 - **Editable 30-day transition plan** — checkbox milestones with owner, status and elaboration
 - **Styled Excel export** — branded title bands, dark headers, zebra rows, colour-coded priority/status pills, frozen panes, auto-filters
+- **Customisable theme colours** — pick primary and secondary colours for the exported workbook
 
 No backend, no accounts, no API tokens. Everything runs client-side in the browser.
 
@@ -30,17 +30,7 @@ No backend, no accounts, no API tokens. Everything runs client-side in the brows
 
 ## Features
 
-### 1. Document Upload (top banner)
-Drag-and-drop or browse. Text-based files (`.txt`, `.md`, `.csv`, `.json`, `.log`, `.yml`) under 2 MB are read in-browser and pattern-matched to pre-populate:
-
-- Client name, industry, region, services
-- Platforms mentioned (Marketo, Salesforce, 6sense, ON24, Salesloft, HubSpot)
-- Stakeholders inferred from email addresses plus nearby role keywords
-- Open issues from lines starting with `issue:`, `risk:`, `bug:`, `blocker:`, `problem:`
-
-A toast confirms how many fields were filled. Files appear as removable chips and ride along into the export.
-
-### 2. Left Panel — Structured Form
+### 1. Left Panel — Structured Form
 - **Client Info** — name, industry, region, services, prepared by
 - **Stakeholders** — name, role, email, notes
 - **Recurring Tasks** — task, frequency, current owner, new owner, instructions
@@ -50,8 +40,11 @@ A toast confirms how many fields were filled. Files appear as removable chips an
 - **Client Preferences** — communication style, reporting expectations, escalation path
 - **Knowledge Transfer Notes** — tribal knowledge, watch-outs, historical context
 
-### 3. Right Panel — 30-Day Transition Plan
+### 2. Right Panel — 30-Day Transition Plan
 An editable milestone list: tick when done, add a title, elaborate in the details field, assign an owner and set a status. Add or remove items freely. Flows straight into the workbook.
+
+### 3. Excel Theme Colours
+Choose primary and secondary colours that drive the exported workbook's title bands, section headers and accent fills. Preset palettes (Navy, Emerald, Graphite, Burgundy, Teal) plus custom hex inputs.
 
 ### 4. Export
 A single **Generate & Download Excel** action assembles the whole workbook from live form state.
@@ -62,7 +55,7 @@ A single **Generate & Download Excel** action assembles the whole workbook from 
 
 | # | Sheet | Contents |
 |---|-------|----------|
-| 1 | Executive Summary | Client, prepared by, prepared date, headline counts, plan overview |
+| 1 | Executive Summary | Client, prepared by, prepared date, headline counts |
 | 2 | Client Overview | Name, industry, region, services delivered |
 | 3 | Stakeholders | Name, role, email, notes |
 | 4 | Recurring Tasks | Task, frequency, current owner, new owner, instructions |
@@ -71,10 +64,9 @@ A single **Generate & Download Excel** action assembles the whole workbook from 
 | 7 | Open Issues | Issue, colour-coded priority, colour-coded status, details |
 | 8 | Client Preferences | Communication, reporting, escalation |
 | 9 | Knowledge Transfer Checklist | Category, notes, done column |
-| 10 | Source Documents | Uploaded file names, size, type, content snippet *(only when files are attached)* |
-| 11 | 30-Day Transition Plan | Milestone, details, owner, status *(final tab)* |
+| 10 | 30-Day Transition Plan | Milestone, details, owner, status *(final tab)* |
 
-Formatting applied to every sheet: merged branded title band, subtitle row, dark column headers, alternating zebra rows, cell borders, tuned column widths, hidden gridlines, frozen header row and auto-filter.
+Formatting applied to every sheet: merged branded title band, subtitle row, dark column headers, alternating zebra rows, cell borders, tuned column widths, hidden gridlines, frozen header row and auto-filter. The primary and secondary colours are taken from the right-panel theme picker.
 
 ---
 
@@ -112,7 +104,7 @@ Single-route by design. The whole tool is one continuous workflow — splitting 
 - **Client-side only** — no server, no database, no API keys, no rate limits, no cost per use
 - **Blank by default** — every field starts empty with a plain-language placeholder so the output is never polluted with sample data
 - **Polish over features** — the deliverable is a document an executive will open; formatting is the product
-- **Privacy by default** — uploaded documents are parsed in the browser and never leave the machine
+- **Privacy by default** — nothing is transmitted; all data stays in the browser
 
 ---
 
@@ -127,5 +119,4 @@ npm run build    # production build
 ## Notes & Limitations
 
 - Login credentials are stored in browser memory and written into the exported file in plain text — treat the workbook as confidential and distribute accordingly.
-- Auto-fill parsing covers text-based formats only. PDF and DOCX files are listed in the Source Documents tab but not parsed.
 - Nothing is saved between page reloads; export before closing the tab.
