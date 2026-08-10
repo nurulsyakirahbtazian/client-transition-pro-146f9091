@@ -742,6 +742,51 @@ function Dashboard() {
                 <Field label="Historical Context"><textarea rows={3} className="input-base" placeholder="e.g. Account start date, past migrations, or team changes" value={kt.history} onChange={(e) => setKT({ ...kt, history: e.target.value })} /></Field>
               </div>
             </Section>
+
+            <Section icon={<Plus className="h-4 w-4" />} title="Custom Fields" subtitle="Add your own fields and pick the field type"
+              action={<AddBtn onClick={() => setCustomFields([...customFields, { label: "", type: "Text", value: "" }])} />}>
+              {customFields.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-border bg-muted/30 p-6 text-center">
+                  <p className="text-[13px] text-muted-foreground">No custom fields yet.</p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">Click "Add" to create a field — it gets its own tab in the Excel export.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {customFields.map((f, i) => (
+                    <RowCard key={i} onRemove={() => setCustomFields(customFields.filter((_, x) => x !== i))}>
+                      <div className="grid grid-cols-12 gap-2">
+                        <input className="input-base col-span-7" placeholder="Field name — e.g. Contract Renewal Date"
+                          value={f.label} onChange={(e) => updateArr(setCustomFields, customFields, i, { ...f, label: e.target.value })} />
+                        <select className="input-base col-span-5" value={f.type}
+                          onChange={(e) => updateArr(setCustomFields, customFields, i, { ...f, type: e.target.value as FieldType, value: "" })}>
+                          {FIELD_TYPES.map((t) => <option key={t}>{t}</option>)}
+                        </select>
+                        <div className="col-span-12">
+                          {f.type === "Long Text" ? (
+                            <textarea rows={3} className="input-base" placeholder="Value" value={f.value}
+                              onChange={(e) => updateArr(setCustomFields, customFields, i, { ...f, value: e.target.value })} />
+                          ) : f.type === "Yes / No" ? (
+                            <select className="input-base" value={f.value}
+                              onChange={(e) => updateArr(setCustomFields, customFields, i, { ...f, value: e.target.value })}>
+                              <option value="">Select…</option><option>Yes</option><option>No</option>
+                            </select>
+                          ) : (
+                            <input
+                              className="input-base"
+                              type={f.type === "Number" ? "number" : f.type === "Date" ? "date" : f.type === "Link" ? "url" : "text"}
+                              placeholder={f.type === "Link" ? "https://…" : "Value"}
+                              value={f.value}
+                              onChange={(e) => updateArr(setCustomFields, customFields, i, { ...f, value: e.target.value })}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    </RowCard>
+                  ))}
+                </div>
+              )}
+            </Section>
+
           </div>
 
           {/* RIGHT PANEL */}
