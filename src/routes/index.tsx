@@ -65,6 +65,24 @@ const initialKT = {
 type PlanItem = { done: boolean; title: string; detail: string; owner: string; status: string };
 const initialPlan: PlanItem[] = [];
 
+type FieldType = "Text" | "Long Text" | "Number" | "Date" | "Yes / No" | "Link";
+const FIELD_TYPES: FieldType[] = ["Text", "Long Text", "Number", "Date", "Yes / No", "Link"];
+type CustomField = { label: string; type: FieldType; value: string };
+
+const THEME_PRESETS: { name: string; primary: string; secondary: string }[] = [
+  { name: "Navy", primary: "#1E3A5F", secondary: "#1A2233" },
+  { name: "Emerald", primary: "#1F6B4F", secondary: "#12352A" },
+  { name: "Graphite", primary: "#3F4A5A", secondary: "#1C2027" },
+  { name: "Burgundy", primary: "#7A1F3D", secondary: "#2A1220" },
+  { name: "Teal", primary: "#12666E", secondary: "#0E2E33" },
+];
+
+const hex6 = (v: string, fallback: string) => {
+  const h = v.replace("#", "").trim();
+  return /^[0-9a-fA-F]{6}$/.test(h) ? h.toUpperCase() : fallback;
+};
+
+
 
 // ---------- Component ----------
 function Dashboard() {
