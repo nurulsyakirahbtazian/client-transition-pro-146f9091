@@ -65,6 +65,24 @@ const initialKT = {
 type PlanItem = { done: boolean; title: string; detail: string; owner: string; status: string };
 const initialPlan: PlanItem[] = [];
 
+type FieldType = "Text" | "Long Text" | "Number" | "Date" | "Yes / No" | "Link";
+const FIELD_TYPES: FieldType[] = ["Text", "Long Text", "Number", "Date", "Yes / No", "Link"];
+type CustomField = { label: string; type: FieldType; value: string };
+
+const THEME_PRESETS: { name: string; primary: string; secondary: string }[] = [
+  { name: "Navy", primary: "#1E3A5F", secondary: "#1A2233" },
+  { name: "Emerald", primary: "#1F6B4F", secondary: "#12352A" },
+  { name: "Graphite", primary: "#3F4A5A", secondary: "#1C2027" },
+  { name: "Burgundy", primary: "#7A1F3D", secondary: "#2A1220" },
+  { name: "Teal", primary: "#12666E", secondary: "#0E2E33" },
+];
+
+const hex6 = (v: string, fallback: string) => {
+  const h = v.replace("#", "").trim();
+  return /^[0-9a-fA-F]{6}$/.test(h) ? h.toUpperCase() : fallback;
+};
+
+
 
 // ---------- Component ----------
 function Dashboard() {
@@ -79,6 +97,10 @@ function Dashboard() {
   const [prefs, setPrefs] = useState(initialPrefs);
   const [kt, setKT] = useState(initialKT);
   const [plan, setPlan] = useState<PlanItem[]>(initialPlan);
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
+  const [sheetPrimary, setSheetPrimary] = useState("#1E3A5F");
+  const [sheetSecondary, setSheetSecondary] = useState("#1A2233");
+
 
   type UploadedFile = { name: string; size: number; type: string; content: string };
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
@@ -200,10 +222,18 @@ function Dashboard() {
 
   const generateExcel = () => {
     // ----- Styling helpers -----
-    const BRAND = "1E3A5F";
-    const INK = "1A2233";
-    const SUBINK = "3A4456";
-    const SOFT = "F4F6FA";
+    const BRAND = hex6(sheetPrimary, "1E3A5F");
+    const INK = hex6(sheetSecondary, "1A2233");
+    const mixWhite = (h: string, amt: number) => {
+      const n = parseInt(h, 16);
+      const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) =>
+        Math.round(c + (255 - c) * amt)
+      );
+      return ch.map((c) => c.toString(16).padStart(2, "0")).join("").toUpperCase();
+    };
+    const SUBINK = mixWhite(INK, 0.22);
+    const SOFT = mixWhite(BRAND, 0.92);
+
     const BORDER_GRAY = "D8DEE7";
     const ZEBRA = "FAFBFD";
 
@@ -484,7 +514,20 @@ function Dashboard() {
       ), "Source Documents");
     }
 
-    // 11. 30-DAY TRANSITION PLAN (last tab) with Owner + Status
+    // 11. CUSTOM FIELDS (user-defined)
+    {
+      const rows = customFields.filter((f) => f.label.trim());
+      if (rows.length > 0) {
+        XLSX.utils.book_append_sheet(wb, makeTableSheet(
+          "Custom Fields", ["Field", "Field Type", "Value"],
+          rows.map((f) => [f.label, f.type, f.value]),
+          [32, 18, 70]
+        ), "Custom Fields");
+      }
+    }
+
+    // 12. 30-DAY TRANSITION PLAN (last tab) with Owner + Status
+
     XLSX.utils.book_append_sheet(wb, makeTableSheet(
       "30-Day Transition Plan", ["Milestone", "Details", "Owner", "Status"],
       plan.map((p) => [
@@ -699,6 +742,51 @@ function Dashboard() {
                 <Field label="Historical Context"><textarea rows={3} className="input-base" placeholder="e.g. Account start date, past migrations, or team changes" value={kt.history} onChange={(e) => setKT({ ...kt, history: e.target.value })} /></Field>
               </div>
             </Section>
+
+            <Section icon={<Plus className="h-4 w-4" />} title="Custom Fields" subtitle="Add your own fields and pick the field type"
+              action={<AddBtn onClick={() => setCustomFields([...customFields, { label: "", type: "Text", value: "" }])} />}>
+              {customFields.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-border bg-muted/30 p-6 text-center">
+                  <p className="text-[13px] text-muted-foreground">No custom fields yet.</p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">Click "Add" to create a field — it gets its own tab in the Excel export.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {customFields.map((f, i) => (
+                    <RowCard key={i} onRemove={() => setCustomFields(customFields.filter((_, x) => x !== i))}>
+                      <div className="grid grid-cols-12 gap-2">
+                        <input className="input-base col-span-7" placeholder="Field name — e.g. Contract Renewal Date"
+                          value={f.label} onChange={(e) => updateArr(setCustomFields, customFields, i, { ...f, label: e.target.value })} />
+                        <select className="input-base col-span-5" value={f.type}
+                          onChange={(e) => updateArr(setCustomFields, customFields, i, { ...f, type: e.target.value as FieldType, value: "" })}>
+                          {FIELD_TYPES.map((t) => <option key={t}>{t}</option>)}
+                        </select>
+                        <div className="col-span-12">
+                          {f.type === "Long Text" ? (
+                            <textarea rows={3} className="input-base" placeholder="Value" value={f.value}
+                              onChange={(e) => updateArr(setCustomFields, customFields, i, { ...f, value: e.target.value })} />
+                          ) : f.type === "Yes / No" ? (
+                            <select className="input-base" value={f.value}
+                              onChange={(e) => updateArr(setCustomFields, customFields, i, { ...f, value: e.target.value })}>
+                              <option value="">Select…</option><option>Yes</option><option>No</option>
+                            </select>
+                          ) : (
+                            <input
+                              className="input-base"
+                              type={f.type === "Number" ? "number" : f.type === "Date" ? "date" : f.type === "Link" ? "url" : "text"}
+                              placeholder={f.type === "Link" ? "https://…" : "Value"}
+                              value={f.value}
+                              onChange={(e) => updateArr(setCustomFields, customFields, i, { ...f, value: e.target.value })}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    </RowCard>
+                  ))}
+                </div>
+              )}
+            </Section>
+
           </div>
 
           {/* RIGHT PANEL */}
@@ -778,7 +866,49 @@ function Dashboard() {
               )}
             </Section>
 
+            <Section icon={<Layers className="h-4 w-4" />} title="Excel Theme Colors" subtitle="Pick the primary and secondary colors used in the exported sheet">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Primary (section bands)">
+                  <div className="flex items-center gap-2">
+                    <input type="color" value={sheetPrimary} onChange={(e) => setSheetPrimary(e.target.value)}
+                      className="h-9 w-12 shrink-0 cursor-pointer rounded-md border border-border bg-card p-1" aria-label="Primary sheet color" />
+                    <input className="input-base" value={sheetPrimary} onChange={(e) => setSheetPrimary(e.target.value)} placeholder="#1E3A5F" />
+                  </div>
+                </Field>
+                <Field label="Secondary (titles & headers)">
+                  <div className="flex items-center gap-2">
+                    <input type="color" value={sheetSecondary} onChange={(e) => setSheetSecondary(e.target.value)}
+                      className="h-9 w-12 shrink-0 cursor-pointer rounded-md border border-border bg-card p-1" aria-label="Secondary sheet color" />
+                    <input className="input-base" value={sheetSecondary} onChange={(e) => setSheetSecondary(e.target.value)} placeholder="#1A2233" />
+                  </div>
+                </Field>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {THEME_PRESETS.map((p) => (
+                  <button key={p.name} type="button"
+                    onClick={() => { setSheetPrimary(p.primary); setSheetSecondary(p.secondary); }}
+                    className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-slate-ink hover:border-slate-soft/50">
+                    <span className="flex">
+                      <span className="h-3.5 w-3.5 rounded-full border border-white" style={{ background: p.primary }} />
+                      <span className="-ml-1 h-3.5 w-3.5 rounded-full border border-white" style={{ background: p.secondary }} />
+                    </span>
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-4 overflow-hidden rounded-lg border border-border">
+                <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-white" style={{ background: sheetSecondary }}>
+                  Sheet title band
+                </div>
+                <div className="px-3 py-1.5 text-[11px] font-semibold text-white" style={{ background: sheetPrimary }}>
+                  Section header
+                </div>
+                <div className="bg-card px-3 py-2 text-[11px] text-muted-foreground">Table row preview</div>
+              </div>
+            </Section>
+
             {/* Action */}
+
             <button
               onClick={generateExcel}
               className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-xl bg-brand px-6 py-5 text-base font-semibold text-brand-foreground shadow-brand transition-all hover:translate-y-[-1px] hover:bg-brand/95 active:translate-y-0"
