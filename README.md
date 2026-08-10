@@ -19,10 +19,10 @@ When a client account changes hands, the knowledge rarely does. Handovers are sc
 
 One structured workspace where the outgoing owner records the full account picture, and one click turns it into a polished, boardroom-ready `.xlsx` handover pack the incoming owner can actually use.
 
-- **Upload existing docs** — SOPs, notes, emails, CSVs are parsed in the browser to auto-fill the form
 - **Structured capture** — client info, stakeholders, recurring tasks, platforms, logins, issues, preferences, knowledge transfer
 - **Editable 30-day transition plan** — checkbox milestones with owner, status and elaboration
 - **Styled Excel export** — branded title bands, dark headers, zebra rows, colour-coded priority/status pills, frozen panes, auto-filters
+- **Customisable theme colours** — pick primary and secondary colours for the exported workbook
 
 No backend, no accounts, no API tokens. Everything runs client-side in the browser.
 
@@ -62,7 +62,7 @@ A single **Generate & Download Excel** action assembles the whole workbook from 
 
 | # | Sheet | Contents |
 |---|-------|----------|
-| 1 | Executive Summary | Client, prepared by, prepared date, headline counts, plan overview |
+| 1 | Executive Summary | Client, prepared by, prepared date, headline counts |
 | 2 | Client Overview | Name, industry, region, services delivered |
 | 3 | Stakeholders | Name, role, email, notes |
 | 4 | Recurring Tasks | Task, frequency, current owner, new owner, instructions |
@@ -71,10 +71,9 @@ A single **Generate & Download Excel** action assembles the whole workbook from 
 | 7 | Open Issues | Issue, colour-coded priority, colour-coded status, details |
 | 8 | Client Preferences | Communication, reporting, escalation |
 | 9 | Knowledge Transfer Checklist | Category, notes, done column |
-| 10 | Source Documents | Uploaded file names, size, type, content snippet *(only when files are attached)* |
-| 11 | 30-Day Transition Plan | Milestone, details, owner, status *(final tab)* |
+| 10 | 30-Day Transition Plan | Milestone, details, owner, status *(final tab)* |
 
-Formatting applied to every sheet: merged branded title band, subtitle row, dark column headers, alternating zebra rows, cell borders, tuned column widths, hidden gridlines, frozen header row and auto-filter.
+Formatting applied to every sheet: merged branded title band, subtitle row, dark column headers, alternating zebra rows, cell borders, tuned column widths, hidden gridlines, frozen header row and auto-filter. The primary and secondary colours are taken from the right-panel theme picker.
 
 ---
 
