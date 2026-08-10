@@ -95,16 +95,6 @@ function Dashboard() {
   const [prefs, setPrefs] = useState(initialPrefs);
   const [kt, setKT] = useState(initialKT);
   const [plan, setPlan] = useState<PlanItem[]>(initialPlan);
-  const [customFields, setCustomFields] = useState<CustomField[]>([]);
-  const [sheetPrimary, setSheetPrimary] = useState("#1E3A5F");
-  const [sheetSecondary, setSheetSecondary] = useState("#1A2233");
-
-
-  type UploadedFile = { name: string; size: number; type: string; content: string };
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  const [dragOver, setDragOver] = useState(false);
-  const [autofillMsg, setAutofillMsg] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const TEXT_EXT = /\.(txt|md|csv|json|log|yml|yaml|tsv)$/i;
   const isTextFile = (f: File) => TEXT_EXT.test(f.name) || f.type.startsWith("text/") || f.type === "application/json";
