@@ -104,7 +104,7 @@ Single-route by design. The whole tool is one continuous workflow — splitting 
 - **Client-side only** — no server, no database, no API keys, no rate limits, no cost per use
 - **Blank by default** — every field starts empty with a plain-language placeholder so the output is never polluted with sample data
 - **Polish over features** — the deliverable is a document an executive will open; formatting is the product
-- **Privacy by default** — uploaded documents are parsed in the browser and never leave the machine
+- **Privacy by default** — nothing is transmitted; all data stays in the browser
 
 ---
 
@@ -119,5 +119,4 @@ npm run build    # production build
 ## Notes & Limitations
 
 - Login credentials are stored in browser memory and written into the exported file in plain text — treat the workbook as confidential and distribute accordingly.
-- Auto-fill parsing covers text-based formats only. PDF and DOCX files are listed in the Source Documents tab but not parsed.
 - Nothing is saved between page reloads; export before closing the tab.
