@@ -751,8 +751,8 @@ function Section({ icon, title, subtitle, action, children }: {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <label className="block"><span className="label-base">{label}</span>{children}</label>;
+function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+  return <label className="block"><span className="label-base">{label}{required && <span className="text-red-500 ml-1">*</span>}</span>{children}</label>;
 }
 
 function RowCard({ children, onRemove }: { children: React.ReactNode; onRemove: () => void }) {
