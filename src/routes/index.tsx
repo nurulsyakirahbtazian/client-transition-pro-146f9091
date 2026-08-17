@@ -447,14 +447,28 @@ function Dashboard() {
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
           {/* LEFT PANEL */}
           <div className="space-y-5">
-            <Section icon={<Briefcase className="h-4 w-4" />} title="Client Info" subtitle="Account fundamentals">
+            <Section id="client-info" icon={<Briefcase className="h-4 w-4" />} title="Client Info" subtitle="Account fundamentals — required">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Field label="Client Name"><input className="input-base" placeholder="e.g. Acme Corp" value={client.name} onChange={(e) => setClient({ ...client, name: e.target.value })} /></Field>
-                <Field label="Industry"><input className="input-base" placeholder="e.g. SaaS / FinTech" value={client.industry} onChange={(e) => setClient({ ...client, industry: e.target.value })} /></Field>
-                <Field label="Region"><input className="input-base" placeholder="e.g. North America" value={client.region} onChange={(e) => setClient({ ...client, region: e.target.value })} /></Field>
-                <Field label="Services"><input className="input-base" placeholder="e.g. ABM, Demand Gen" value={client.services} onChange={(e) => setClient({ ...client, services: e.target.value })} /></Field>
+                <Field label="Client Name" required>
+                  <input className={missingClientInfo.name ? "input-base input-error" : "input-base"} placeholder="e.g. Acme Corp" value={client.name} onChange={(e) => { setClient({ ...client, name: e.target.value }); setMissingClientInfo(m => ({ ...m, name: false })); }} aria-invalid={missingClientInfo.name} />
+                </Field>
+                <Field label="Industry" required>
+                  <input className={missingClientInfo.industry ? "input-base input-error" : "input-base"} placeholder="e.g. SaaS / FinTech" value={client.industry} onChange={(e) => { setClient({ ...client, industry: e.target.value }); setMissingClientInfo(m => ({ ...m, industry: false })); }} aria-invalid={missingClientInfo.industry} />
+                </Field>
+                <Field label="Region" required>
+                  <input className={missingClientInfo.region ? "input-base input-error" : "input-base"} placeholder="e.g. North America" value={client.region} onChange={(e) => { setClient({ ...client, region: e.target.value }); setMissingClientInfo(m => ({ ...m, region: false })); }} aria-invalid={missingClientInfo.region} />
+                </Field>
+                <Field label="Services" required>
+                  <input className={missingClientInfo.services ? "input-base input-error" : "input-base"} placeholder="e.g. ABM, Demand Gen" value={client.services} onChange={(e) => { setClient({ ...client, services: e.target.value }); setMissingClientInfo(m => ({ ...m, services: false })); }} aria-invalid={missingClientInfo.services} />
+                </Field>
                 <Field label="Prepared By"><input className="input-base" placeholder="e.g. Jane Doe, Outgoing Account Lead" value={preparedBy} onChange={(e) => setPreparedBy(e.target.value)} /></Field>
               </div>
+              {Object.values(missingClientInfo).some(Boolean) && (
+                <p className="mt-3 flex items-center gap-1.5 text-[12px] font-medium text-red-500">
+                  <span aria-hidden="true">●</span>
+                  Please complete all Client Info fields before generating the Excel.
+                </p>
+              )}
             </Section>
 
             <Section icon={<Users className="h-4 w-4" />} title="Stakeholders" subtitle="Key contacts & decision makers"
