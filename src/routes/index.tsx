@@ -731,11 +731,12 @@ function Logo() {
   );
 }
 
-function Section({ icon, title, subtitle, action, children }: {
+function Section({ id, icon, title, subtitle, action, children }: {
+  id?: string;
   icon: React.ReactNode; title: string; subtitle?: string; action?: React.ReactNode; children: React.ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-border bg-card shadow-[0_1px_3px_rgb(15_23_42/0.04)]">
+    <section id={id} className="overflow-hidden rounded-xl border border-border bg-card shadow-[0_1px_3px_rgb(15_23_42/0.04)]">
       <header className="flex items-center justify-between border-b border-border px-5 py-3.5">
         <div className="flex items-center gap-2.5">
           <span className="flex h-7 w-7 items-center justify-center rounded-md bg-slate-ink text-white">{icon}</span>
