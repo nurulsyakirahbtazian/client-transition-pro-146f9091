@@ -714,6 +714,12 @@ function Dashboard() {
               <span className="ml-2 rounded-md bg-white/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">10 tabs · .xlsx</span>
             </button>
 
+            {Object.values(missingClientInfo).some(Boolean) && (
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[12px] font-medium text-red-600">
+                <span className="font-semibold">Client Info required.</span> Fill in Client Name, Industry, Region, and Services to generate the Excel workbook.
+              </div>
+            )}
+
             <p className="text-center text-[11px] text-muted-foreground">
               Generates a fully-structured workbook from your live form data · No data leaves your browser
             </p>
