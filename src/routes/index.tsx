@@ -106,6 +106,18 @@ function Dashboard() {
 
 
   const generateExcel = () => {
+    const validation = {
+      name: !client.name.trim(),
+      industry: !client.industry.trim(),
+      region: !client.region.trim(),
+      services: !client.services.trim(),
+    };
+    setMissingClientInfo(validation);
+    if (Object.values(validation).some(Boolean)) {
+      document.getElementById("client-info")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
     // ----- Styling helpers -----
     const BRAND = hex6(sheetPrimary, "1E3A5F");
     const INK = hex6(sheetSecondary, "1A2233");
