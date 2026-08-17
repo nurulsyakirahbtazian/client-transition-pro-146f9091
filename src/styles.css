@@ -82,6 +82,15 @@
   }
 }
 
+@utility input-error {
+  border-color: oklch(0.55 0.22 25);
+  &:focus {
+    outline: none;
+    border-color: oklch(0.55 0.22 25);
+    box-shadow: 0 0 0 3px color-mix(in oklab, oklch(0.55 0.22 25) 18%, transparent);
+  }
+}
+
 @utility label-base {
   display: block;
   font-size: 0.7rem;

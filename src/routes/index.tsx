@@ -86,6 +86,12 @@ const hex6 = (v: string, fallback: string) => {
 function Dashboard() {
   const [client, setClient] = useState(initialClient);
   const [preparedBy, setPreparedBy] = useState("");
+  const [missingClientInfo, setMissingClientInfo] = useState({
+    name: false,
+    industry: false,
+    region: false,
+    services: false,
+  });
   const [stakeholders, setStakeholders] = useState<Stakeholder[]>(initialStakeholders);
   const [tasks, setTasks] = useState<RecurringTask[]>(initialTasks);
   const [platforms, setPlatforms] = useState(initialPlatforms);
@@ -100,6 +106,18 @@ function Dashboard() {
 
 
   const generateExcel = () => {
+    const validation = {
+      name: !client.name.trim(),
+      industry: !client.industry.trim(),
+      region: !client.region.trim(),
+      services: !client.services.trim(),
+    };
+    setMissingClientInfo(validation);
+    if (Object.values(validation).some(Boolean)) {
+      document.getElementById("client-info")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
     // ----- Styling helpers -----
     const BRAND = hex6(sheetPrimary, "1E3A5F");
     const INK = hex6(sheetSecondary, "1A2233");
@@ -429,14 +447,28 @@ function Dashboard() {
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
           {/* LEFT PANEL */}
           <div className="space-y-5">
-            <Section icon={<Briefcase className="h-4 w-4" />} title="Client Info" subtitle="Account fundamentals">
+            <Section id="client-info" icon={<Briefcase className="h-4 w-4" />} title="Client Info" subtitle="Account fundamentals — required">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Field label="Client Name"><input className="input-base" placeholder="e.g. Acme Corp" value={client.name} onChange={(e) => setClient({ ...client, name: e.target.value })} /></Field>
-                <Field label="Industry"><input className="input-base" placeholder="e.g. SaaS / FinTech" value={client.industry} onChange={(e) => setClient({ ...client, industry: e.target.value })} /></Field>
-                <Field label="Region"><input className="input-base" placeholder="e.g. North America" value={client.region} onChange={(e) => setClient({ ...client, region: e.target.value })} /></Field>
-                <Field label="Services"><input className="input-base" placeholder="e.g. ABM, Demand Gen" value={client.services} onChange={(e) => setClient({ ...client, services: e.target.value })} /></Field>
+                <Field label="Client Name" required>
+                  <input className={missingClientInfo.name ? "input-base input-error" : "input-base"} placeholder="e.g. Acme Corp" value={client.name} onChange={(e) => { setClient({ ...client, name: e.target.value }); setMissingClientInfo(m => ({ ...m, name: false })); }} aria-invalid={missingClientInfo.name} />
+                </Field>
+                <Field label="Industry" required>
+                  <input className={missingClientInfo.industry ? "input-base input-error" : "input-base"} placeholder="e.g. SaaS / FinTech" value={client.industry} onChange={(e) => { setClient({ ...client, industry: e.target.value }); setMissingClientInfo(m => ({ ...m, industry: false })); }} aria-invalid={missingClientInfo.industry} />
+                </Field>
+                <Field label="Region" required>
+                  <input className={missingClientInfo.region ? "input-base input-error" : "input-base"} placeholder="e.g. North America" value={client.region} onChange={(e) => { setClient({ ...client, region: e.target.value }); setMissingClientInfo(m => ({ ...m, region: false })); }} aria-invalid={missingClientInfo.region} />
+                </Field>
+                <Field label="Services" required>
+                  <input className={missingClientInfo.services ? "input-base input-error" : "input-base"} placeholder="e.g. ABM, Demand Gen" value={client.services} onChange={(e) => { setClient({ ...client, services: e.target.value }); setMissingClientInfo(m => ({ ...m, services: false })); }} aria-invalid={missingClientInfo.services} />
+                </Field>
                 <Field label="Prepared By"><input className="input-base" placeholder="e.g. Jane Doe, Outgoing Account Lead" value={preparedBy} onChange={(e) => setPreparedBy(e.target.value)} /></Field>
               </div>
+              {Object.values(missingClientInfo).some(Boolean) && (
+                <p className="mt-3 flex items-center gap-1.5 text-[12px] font-medium text-red-500">
+                  <span aria-hidden="true">●</span>
+                  Please complete all Client Info fields before generating the Excel.
+                </p>
+              )}
             </Section>
 
             <Section icon={<Users className="h-4 w-4" />} title="Stakeholders" subtitle="Key contacts & decision makers"
@@ -682,6 +714,12 @@ function Dashboard() {
               <span className="ml-2 rounded-md bg-white/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">10 tabs · .xlsx</span>
             </button>
 
+            {Object.values(missingClientInfo).some(Boolean) && (
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[12px] font-medium text-red-600">
+                <span className="font-semibold">Client Info required.</span> Fill in Client Name, Industry, Region, and Services to generate the Excel workbook.
+              </div>
+            )}
+
             <p className="text-center text-[11px] text-muted-foreground">
               Generates a fully-structured workbook from your live form data · No data leaves your browser
             </p>
@@ -713,11 +751,12 @@ function Logo() {
   );
 }
 
-function Section({ icon, title, subtitle, action, children }: {
+function Section({ id, icon, title, subtitle, action, children }: {
+  id?: string;
   icon: React.ReactNode; title: string; subtitle?: string; action?: React.ReactNode; children: React.ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-border bg-card shadow-[0_1px_3px_rgb(15_23_42/0.04)]">
+    <section id={id} className="overflow-hidden rounded-xl border border-border bg-card shadow-[0_1px_3px_rgb(15_23_42/0.04)]">
       <header className="flex items-center justify-between border-b border-border px-5 py-3.5">
         <div className="flex items-center gap-2.5">
           <span className="flex h-7 w-7 items-center justify-center rounded-md bg-slate-ink text-white">{icon}</span>
@@ -733,8 +772,8 @@ function Section({ icon, title, subtitle, action, children }: {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <label className="block"><span className="label-base">{label}</span>{children}</label>;
+function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+  return <label className="block"><span className="label-base">{label}{required && <span className="text-red-500 ml-1">*</span>}</span>{children}</label>;
 }
 
 function RowCard({ children, onRemove }: { children: React.ReactNode; onRemove: () => void }) {
