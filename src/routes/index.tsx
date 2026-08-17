@@ -86,6 +86,12 @@ const hex6 = (v: string, fallback: string) => {
 function Dashboard() {
   const [client, setClient] = useState(initialClient);
   const [preparedBy, setPreparedBy] = useState("");
+  const [missingClientInfo, setMissingClientInfo] = useState({
+    name: false,
+    industry: false,
+    region: false,
+    services: false,
+  });
   const [stakeholders, setStakeholders] = useState<Stakeholder[]>(initialStakeholders);
   const [tasks, setTasks] = useState<RecurringTask[]>(initialTasks);
   const [platforms, setPlatforms] = useState(initialPlatforms);
